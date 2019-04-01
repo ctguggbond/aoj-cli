@@ -1,4 +1,4 @@
-class AbstractOperation:
+class AbstractOperate:
     def isLogin():
         pass
     def login():
@@ -25,4 +25,3 @@ class AbstractOperation:
         pass
     def showPassedDetail():
         pass
-    
