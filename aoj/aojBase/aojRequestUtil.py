@@ -1,12 +1,12 @@
 import requests
-import pytesseract 
+import pytesseract
 from PIL import Image
 from io import BytesIO
 from http import cookiejar
-import configparser
+from aojBase import globalVar
 
 class RequestUtil(object):
-    
+
     def __init__(self):
         self.header = {
             'Accept': '*/*',
@@ -17,14 +17,9 @@ class RequestUtil(object):
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
 #            'Host': ,
 #            'Referer': ,
-        }        
-        self.basePath = os.environ['HOME'] + '/.aoj/'
-        self.conf = configparser.ConfigParser()
-        self.conf.read(basePath + 'base.conf')
-        self.OJ_NAME = self.conf.get('base', 'oj_name')
-
+        }
         self.session = requests.session()
-        self.session.cookies = cookiejar.LWPCookieJar(basePath + ".cookies/" + OJ_NAME)
+        self.session.cookies = cookiejar.LWPCookieJar(globalVar.BASE_PATH + ".cookies/" + globalVar.OJ_NAME)
         self.session.cookies.load(ignore_discard=True, ignore_expires=True)
 
     # 解析验证码，当然只支持简单的
@@ -35,7 +30,6 @@ class RequestUtil(object):
 
     def doPost(url, data):
         return self.session.post(url, headers = self.header, data = data)
-    
+
     def doGet(url, param):
         return self.session.get(url, headers = self.header, params=param)
-        
