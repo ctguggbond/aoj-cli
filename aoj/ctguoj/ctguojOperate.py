@@ -130,7 +130,7 @@ class CtguojOperate(AojOperate):
             sys.exit(0)
         for pdiv in allProblemDiv:
             p = Problem()
-            p.Pid = re.sub("\D", "", pdiv['id'])
+            p.pid = re.sub("\D", "", pdiv['id'])
             title = pdiv.find('div', class_='nav').string.split('.')[1].strip()
             tempStrs = title.split('(')
             p.score = int(re.sub("\D", "", tempStrs[len(tempStrs) - 1]))
@@ -156,7 +156,7 @@ class CtguojOperate(AojOperate):
             PrintUtil.error("你已经AC了或者没有该题目")
             sys.exit(0)
         p = Problem()
-        p.Pid = re.sub("\D", "", pdiv['id'])
+        p.pid = re.sub("\D", "", pdiv['id'])
         p.title = pdiv.find('div', class_='nav').string.split('.')[1].strip()
         p.timeAndMem = pdiv.find('div', class_='common').string.strip()
 
@@ -278,7 +278,7 @@ class CtguojOperate(AojOperate):
             p = Problem()
             p.score = int(re.sub("\D", "", tempStrs[len(tempStrs) - 1]))
             p.title = title.split('(')[0].strip()
-            p.Pid = t.string.strip().split('.')[0]
+            p.pid = t.string.strip().split('.')[0]
             problemList.append(p)
 
         return problemList
@@ -295,7 +295,7 @@ class CtguojOperate(AojOperate):
         infolist = ['title', 'content', 'descr_input', 'descr_output', 'ex_input', 'ex_output', 'code', 'score']
         j = 0
         problem = Problem()
-        problem.Pid = ''
+        problem.pid = ''
         problem.timeAndMem = ''
         for i in range(0, 31):
             s = ''

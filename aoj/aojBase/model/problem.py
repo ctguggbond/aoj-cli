@@ -7,7 +7,7 @@ class Problem:
         pass
 
     def problemDetail(self):
-        Pid = termcolor.colored(self.Pid, 'magenta')
+        pid = termcolor.colored(self.pid, 'magenta')
         title = termcolor.colored(self.title, 'white')
         timeAndMem = termcolor.colored("(" + self.timeAndMem + ")", 'green')
         content = termcolor.colored(self.content, 'white')
@@ -23,14 +23,14 @@ class Problem:
         info5 = termcolor.colored('输出样例:', 'magenta')
 
         info = '\n'.join(
-            ['Id:[' + Pid + ']' + '\t\t' + title, timeAndMem, info1, content, info2, descr_input, info3, descr_output,
+            ['Id:[' + pid + ']' + '\t\t' + title, timeAndMem, info1, content, info2, descr_input, info3, descr_output,
              info4, ex_input, info5, ex_output, code])
         return '\n\n' + info
 
     def problemSimple(self):
-        Pid = termcolor.colored(self.Pid, 'magenta')
+        pid = termcolor.colored(self.pid, 'magenta')
         title = termcolor.colored(self.title, 'white')
-        pidAndtitle = ''.join('[' + Pid + ']' + '-' + title)
+        pidAndtitle = ''.join('[' + pid + ']' + '-' + title)
         formattitle = '{:<{l}}'.format(pidAndtitle, l=42 - len(pidAndtitle.encode('GBK')) + len(pidAndtitle))
         self.score = "%02d" % self.score
         score = termcolor.colored(str(self.score) + '分', 'yellow')
@@ -47,6 +47,6 @@ class Problem:
         info5 = '输出样例:'
 
         info = '\n'.join(
-            ['Id:[' + self.Pid + ']' + '\t', self.title, info1, self.content, info2, self.descr_input, info3,
+            ['Id:[' + self.pid + ']' + '\t', self.title, info1, self.content, info2, self.descr_input, info3,
              self.descr_output, info4, self.ex_input, info5, self.ex_output])
         return '\n' + info

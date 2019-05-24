@@ -2,9 +2,10 @@ from abc import ABCMeta, abstractmethod
 from aojBase.printUtil import PrintUtil
 from aojBase.model.contest import Contest
 from aojBase import globalVar
-import json
+import pickle
 import os
 import re
+import subprocess
 
 
 class AojOperate(metaclass=ABCMeta):
@@ -103,10 +104,10 @@ class AojOperate(metaclass=ABCMeta):
         # 先尝试从缓存的文件中加载
         i = 1
         try:
-            with open(globalVar.BASE_CONF_PATH + 'problemList.json', 'r') as file_object:
-                pList = json.load(file_object)
+            with open(globalVar.BASE_CONF_PATH + 'problemList', 'rb') as file_object:
+                pList = pickle.load(file_object)
             for p in pList:
-                print(p, end=' ')
+                print(p.problemSimple, end=' ')
                 if i % 3 == 0:
                     print('')
                 i = i + 1
@@ -132,9 +133,9 @@ class AojOperate(metaclass=ABCMeta):
             rList[i].showUserInfo()
 
     # 显示题目详细信息
-    def showProblemDetail(self, Pid):
+    def showProblemDetail(self, pid):
         PrintUtil.info("正在加载题目...")
-        p = self.getProblemInfo(Pid)
+        p = self.getProblemInfo(pid)
         os.system('clear')
         print(p.problemDetail())
 
@@ -154,17 +155,16 @@ class AojOperate(metaclass=ABCMeta):
 
         self.submitCode(code, pid)
 
-    # 缓存题目列表信息
+    # 缓存题目列表信息 todo 缓存题目的所有信息
     def saveProblemList(self):
         PrintUtil.info('正在缓存题目信息...')
         pList = self.getProblemList()
-        titleList = []
-        for p in pList:
-            titleList.append(p.problemSimple())
         try:
-            with open(globalVar.BASE_PATH + 'problemList.json', 'w') as file_object:
-                json.dump(titleList, file_object)
-        except:
+            with open(globalVar.BASE_PATH + 'problemList', 'wb') as file_object:
+                pickle.dump(pList, file_object)
+        except Exception as e:
+            PrintUtil.error('缓存失败 :(')
+            print(e)
             pass
 
     # 显示已经通过的题目列表
@@ -221,3 +221,28 @@ class AojOperate(metaclass=ABCMeta):
         except:
             print(problem.problemDetail())
         PrintUtil.success(problem.score)
+
+    def testCode(self, fileName):
+        # 编译
+        compilep = subprocess.Popen(['g++', fileName], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        res = ''
+        for line in compilep.stdout.readlines():
+            res = res + line.decode()
+        if res.find('error') >= 0:
+            PrintUtil.info('编译错误')
+            PrintUtil.error(res)
+            return
+        # 执行
+        ## 读取测试数据
+        pid = fileName.split('.')[0]
+        problem = self.getProblemInfo(pid)
+        ex_input = problem.ex_input
+        ex_output = problem.ex_output
+
+        execp = subprocess.Popen(['./a.out'], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, err = execp.communicate(input=ex_input.encode())
+        PrintUtil.info("测试输出:")
+        print(out.decode(), end="")
+        PrintUtil.info("正确输出:")
+        print(ex_output, end="")

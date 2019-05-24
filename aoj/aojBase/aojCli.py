@@ -81,6 +81,16 @@ def passed_commond():
     help_commond()
 
 
+def test_commond():
+    if arg_len == 3:
+        arg1 = sys.argv[1]
+        arg2 = sys.argv[2]
+        if arg1 == "test":
+            ojOperate.testCode(arg2)
+            return
+    PrintUtil.error("参数错误")
+    help_commond()
+
 def help_commond():
     info = "\n" \
            "-----------------------help-----------------------" \
@@ -168,6 +178,8 @@ def aoj_cli_main():
             submit_commond()
         elif arg1 == "passed":
             passed_commond()
+        elif arg1 == "test":
+            test_commond()
         else:
             PrintUtil.error("参数错误")
             help_commond()
