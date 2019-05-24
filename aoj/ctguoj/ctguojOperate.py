@@ -234,7 +234,7 @@ class CtguojOperate(AojOperate):
         globalVar.BASE_CONF.set('contest', 'cid', cid)
         globalVar.BASE_CONF.set('contest', 'ctype', ctype)
         globalVar.BASE_CONF.set('contest', 'cpass', cpass)
-        with open(globalVar.BASE_PATH + 'ctguoj.conf', 'w') as fw:
+        with open(globalVar.BASE_PATH + 'base.conf', 'w') as fw:
             globalVar.BASE_CONF.write(fw)
         self.saveProblemList()
         PrintUtil.info("设置比赛成功! 'coj list -p' 显示题目列表\n")

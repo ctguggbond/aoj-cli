@@ -104,9 +104,18 @@ def aoj_cli_main():
         ojOperate.login(False, '', '')
         sys.exit(0)
     if not os.path.exists(globalVar.BASE_PATH + ".cookies/" + globalVar.OJ_NAME):
-        PrintUtil.info("欢迎使用,登录后享受丝滑刷题")
-        help_commond()
-        PrintUtil.info("使用\'coj login\'登录")
+        logo = "" \
+               "                                        \n" \
+               "   █████╗      ██████╗          ██╗     \n" \
+               "   ██╔══██╗    ██╔═══██╗         ██║    \n" \
+               "   ███████║    ██║   ██║         ██║    \n" \
+               "   ██╔══██║    ██║   ██║    ██   ██║    \n" \
+               "   ██║  ██║    ╚██████╔╝    ╚█████╔╝    \n" \
+               "   ╚═╝  ╚═╝     ╚═════╝      ╚════╝     \n" \
+
+        PrintUtil.info(logo)
+        PrintUtil.info("欢迎使用 coj ,登录后享受丝滑刷题")
+        PrintUtil.info("使用\'coj login\' 登录")
     elif not ojOperate.isLogin():
         # 验证用户是否已经保存密码
         try:
