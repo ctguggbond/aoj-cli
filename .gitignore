@@ -1,5 +1,6 @@
 *.pyc
 *.pyo
 *.tmp*
+.idea/
 *~
 __pycache__/

@@ -1,4 +1,7 @@
-from aojBase.aojApi import AojApi
+from aojBase.aojCli import aoj_cli_main
 
-api = AojApi()
-print(api.loginUrl())
+
+try:
+    aoj_cli_main()
+except KeyboardInterrupt:
+    print("\n操作取消")
