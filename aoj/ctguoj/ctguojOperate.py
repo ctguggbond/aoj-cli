@@ -8,12 +8,10 @@ from aojBase.model.userInfo import UserInfo
 
 from bs4 import BeautifulSoup
 from aojBase.aojApi import AojApi
-import getpass
 import termcolor
 from PIL import Image
 from io import BytesIO
 import pytesseract
-import base64
 import json
 import re
 import sys
@@ -31,15 +29,11 @@ class CtguojOperate(AojOperate):
         else:
             return False
 
-    def login(self, isauto, username, password):
-        if not isauto:
-            username = input(termcolor.colored('请输入用户名: ', 'cyan'))
-            password = getpass.getpass(termcolor.colored('请输入密码： ', 'cyan'))
-
+    def login(self, username, password, loginUrl):
         # 验证码识别率较低..索性尝试5次
         tryloginTime = 5
         while (tryloginTime > 0):
-            resp = RequestUtil.doPost(url=AojApi.loginUrl(), data=self.getLoginData(username, password))
+            resp = RequestUtil.doPost(url=loginUrl, data=self.getLoginData(username, password))
 
             soup = BeautifulSoup(resp.text, "lxml")
             divlist = soup.find_all('div', class_='user')
@@ -47,35 +41,10 @@ class CtguojOperate(AojOperate):
             if len(divlist) > 3:
                 info = divlist[3].font.string
                 if info != "验证码有误":
-                    globalVar.BASE_CONF.set('user', 'password', '')
-                    with open(globalVar.BASE_CONF_PATH, 'w') as fw:
-                        globalVar.BASE_CONF.write(fw)
                     PrintUtil.error(info)
-                    if isauto:
-                        PrintUtil.info('请使用\'coj login\'手动登录')
-                    break
+                    return False
             else:
-                PrintUtil.success("登录成功！")
-                RequestUtil.session.cookies.save(ignore_discard=True, ignore_expires=True)
-                # 如果是手动登录成功保存密码
-                if not isauto:
-                    option = input(termcolor.colored(u'\n是否保存用户名及密码？ (yes/no) ', 'cyan'))
-                    if option == 'yes':
-                        # 保存密码
-                        try:
-                            globalVar.BASE_CONF.set('user', 'username', username)
-                            # 先简单base64编码加密意思意思...
-                            bytesString = password.encode(encoding="utf-8")
-                            encodestr = base64.b64encode(bytesString)
-                            globalVar.BASE_CONF.set('user', 'password', encodestr.decode(encoding='utf-8'))
-                            with open(globalVar.BASE_CONF_PATH, 'w') as fw:
-                                globalVar.BASE_CONF.write(fw)
-                            PrintUtil.success('保存密码成功  :)')
-                        except Exception as e:
-                            PrintUtil.info("保存密码失败 :(")
-                            PrintUtil.error(e)
-                    PrintUtil.info('\'coj list -c\'查看比赛列表.\n')
-                break
+                return True
             tryloginTime = tryloginTime - 1
         if tryloginTime <= 0:
             PrintUtil.error("oooops...验证码识别失败,再试试?")
@@ -92,14 +61,14 @@ class CtguojOperate(AojOperate):
         }
         return data
 
-    def getContestList(self, isAll):
-        resp = RequestUtil.doGet(AojApi.contestUrl())
+    def getContestList(self, containPassed, contestUrl):
+        resp = RequestUtil.doGet(contestUrl)
         jdata = json.loads(resp.text)
 
         datalist = jdata.get('list')
         contestList = []
         for data in datalist:
-            if data['status'] == 'running' or isAll:
+            if data['status'] == 'running' or containPassed:
                 c = Contest()
                 c.cid = data['id']
                 if data['isjava'] == '1':

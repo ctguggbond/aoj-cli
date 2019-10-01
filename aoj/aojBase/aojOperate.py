@@ -17,22 +17,23 @@ class AojOperate(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def login(self, isauto, username, password):
+    def login(self, username, password, loginUrl):
         """
         登录方法
-        :param isauto:  是否自动登录
         :param username: 用户名
         :param password: 密码
-        :return:
+        :param loginUrl: 登录的url
+        :return: true or false
         """
 
     # 获取比赛列表 isAll参数表示是否显示所有
     @abstractmethod
-    def getContestList(self, isAll):
+    def getContestList(self,  containPassed, contestUrl):
         """
         获取比赛列表
-        :param isAll:
-        :return:
+        :param containPassed: 是否获取所有比赛，包括已经结束的
+        :param contestUrl: 获取比赛的url
+        :return: Contest model list
         """
 
     @abstractmethod
@@ -86,8 +87,8 @@ class AojOperate(metaclass=ABCMeta):
         """
 
     # 输出比赛列表的详细信息 isAll参数表示是否显示所有
-    def showContestList(self, isAll):
-        contestList = self.getContestList(isAll)
+    def showContestList(self, containPassed, contestUrl):
+        contestList = self.getContestList(containPassed, contestUrl)
         for c in contestList:
             if isinstance(c, Contest):
                 c.problemDetail()
