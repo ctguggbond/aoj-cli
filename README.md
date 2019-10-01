@@ -17,9 +17,9 @@
 	show ranking     | 显示当前参加比赛对应的排名
 	passed           | 显示已提交的题目列表
 	passed id        | 显示所有已提交题目详细信息
-  test filename    | 用测试样例测试当前代码
+ 	test filename    | 用测试样例测试当前代码
 	login            | 登录
-  checkout oj name | 切换oj
+	checkout oj name | 切换oj
 	help             | 显示此帮助信息
 ```
   
