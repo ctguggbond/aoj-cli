@@ -10,6 +10,6 @@ class Contest:
         title = termcolor.colored(self.title, 'white')
         ctype = termcolor.colored(self.ctype, 'blue')
         endTime = termcolor.colored("(" + self.endTime + ")", 'red')
-        teacherName = termcolor.colored(self.teacherName, 'red')
-        info = '\n'.join(['['+cid + ']' + ' ' + '{:<{l}}'.format(title,l= 50-len(title.encode('GBK'))+len(title)) + ctype + '\t' + endTime + ' '+ teacherName])
+        desc = termcolor.colored(self.desc, 'red')
+        info = '\n'.join(['['+cid + ']' + '\t' + '{:<{l}}'.format(title,l= 50-len(title.encode('GBK'))+len(title)) + ctype + '\t' + endTime + ' '+ desc])
         print(info)

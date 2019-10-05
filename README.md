@@ -1,11 +1,25 @@
 # all online judge code cli
 
-各oj的命令行前端... 参考 leetcode-cli
+各oj的命令行前端... 想法来源: [leetcode-cli](https://github.com/skygragon/leetcode-cli)
+
+# 进展
 
 - 已支持ctguoj全部功能
-- hihocoder 接入登录 获取比赛列表
+- hihocoder 支持登录、查看比赛列表，题目列表，显示题目信息
+- 这个无聊的项目先停止了...
 
-功能列表:
+# 使用及开发
+```
+git https://github.com/ctguggbond/aoj-cli.git
+cd aoj-cli
+运行: python3 aoj/__main__.py
+失败需安装相关依赖库
+
+拓展其它oj
+参考ctguoj / hihocoer 目录下代码， 实现aojOperate类 然后该改的改，能删的删...
+```
+
+# 功能列表:
 ```
 	list -c          | 列出所有正在进行的比赛
 	use id           | 根据cid选择比赛
@@ -24,4 +38,4 @@
 ```
   
 # Todo
-- 改改结构, 争取能适配更多的oj
+- 先适配更多oj, 结构及功能还需要在适配更多oj的过程中慢慢添加修改

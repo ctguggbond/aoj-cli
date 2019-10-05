@@ -20,7 +20,7 @@ import sys
 class CtguojOperate(AojOperate):
 
     def isLogin(self):
-        is_login_url = AojApi.isLoginUrl()
+        is_login_url = AojApi.getUrl('isLogin')
         resp = RequestUtil.doGet(url=is_login_url)
         soup = BeautifulSoup(resp.text, "lxml")
         islogin = soup.find_all(text='用户名')
@@ -29,11 +29,11 @@ class CtguojOperate(AojOperate):
         else:
             return False
 
-    def login(self, username, password, loginUrl):
+    def login(self, username, password):
         # 验证码识别率较低..索性尝试5次
         tryloginTime = 5
         while (tryloginTime > 0):
-            resp = RequestUtil.doPost(url=loginUrl, data=self.getLoginData(username, password))
+            resp = RequestUtil.doPost(url=AojApi.getUrl('login'), data=self.getLoginData(username, password))
 
             soup = BeautifulSoup(resp.text, "lxml")
             divlist = soup.find_all('div', class_='user')
@@ -51,7 +51,7 @@ class CtguojOperate(AojOperate):
 
     # 获取登录参数
     def getLoginData(self, username, password):
-        image = Image.open(BytesIO(RequestUtil.doGet(AojApi.captchaUrl()).content))
+        image = Image.open(BytesIO(RequestUtil.doGet(AojApi.getUrl('captcha')).content))
         vcode = pytesseract.image_to_string(image)
 
         data = {
@@ -61,8 +61,8 @@ class CtguojOperate(AojOperate):
         }
         return data
 
-    def getContestList(self, containPassed, contestUrl):
-        resp = RequestUtil.doGet(contestUrl)
+    def getContestList(self, containPassed):
+        resp = RequestUtil.doGet(AojApi.getUrl('contest'))
         jdata = json.loads(resp.text)
 
         datalist = jdata.get('list')
@@ -81,14 +81,14 @@ class CtguojOperate(AojOperate):
                 contestList.append(c)
         return contestList
 
-    def getProblemList(self):
-        cid = globalVar.BASE_CONF.get('contest', 'cid')  # 比赛id
+    def getProblemList(self, cid):
         ctype = globalVar.BASE_CONF.get('contest', 'ctype')
         cpass = globalVar.BASE_CONF.get('contest', 'cpass')
 
         data = {'id' : cid, 'type': ctype}
-        resp = RequestUtil.doGet(AojApi.pwdProblemsUrl(), data) \
-            if cpass == '1' else RequestUtil.doGet(AojApi.problemsUrl(), data)
+        pwdProbleUrl = globalVar.OJ_CONF.get('urls', 'pwdProblems')
+        resp = RequestUtil.doGet(pwdProbleUrl, data) \
+            if cpass == '1' else RequestUtil.doGet(AojApi.getUrl('problems'), data)
         # 解析网页数据
         soup = BeautifulSoup(resp.text, "lxml")
         # 仅获取题目和id
@@ -102,21 +102,21 @@ class CtguojOperate(AojOperate):
             p.pid = re.sub("\D", "", pdiv['id'])
             title = pdiv.find('div', class_='nav').string.split('.')[1].strip()
             tempStrs = title.split('(')
-            p.score = int(re.sub("\D", "", tempStrs[len(tempStrs) - 1]))
+            p.score = '分数:' + re.sub("\D", "", tempStrs[len(tempStrs) - 1]).strip()
             p.title = title.split('(')[0].strip()
             pList.append(p)
         # 按分数排序
         pList = sorted(pList, key=lambda pList: pList.score)
         return pList
 
-    def getProblemInfo(self, pid):
-        cid = globalVar.BASE_CONF.get('contest', 'cid')  # 比赛id
+    def getProblemInfo(self, cid, pid):
         ctype = globalVar.BASE_CONF.get('contest', 'ctype')
         cpass = globalVar.BASE_CONF.get('contest', 'cpass')
 
         data = {'id' : cid, 'type': ctype}
-        resp = RequestUtil.doGet(AojApi.pwdProblemsUrl(), data) \
-            if cpass == '1' else RequestUtil.doGet(AojApi.problemsUrl(), data)
+        pwdProbleUrl = globalVar.OJ_CONF.get('urls', 'pwdProblems')
+        resp = RequestUtil.doGet(pwdProbleUrl, data) \
+            if cpass == '1' else RequestUtil.doGet(AojApi.getUrl('problems'), data)
         # 解析网页数据
         soup = BeautifulSoup(resp.text, "lxml")
 
@@ -140,7 +140,7 @@ class CtguojOperate(AojOperate):
 
     def getRankingList(self, cid):
         rankData = {"id": cid}
-        resp = RequestUtil.doGet(AojApi.rankUrl(), rankData)
+        resp = RequestUtil.doGet(AojApi.getUrl('rank'), rankData)
         soup = BeautifulSoup(resp.text, "lxml")
         rankingTr = soup.find_all('tr', id=re.compile('\d*'))
         if not rankingTr:
@@ -166,7 +166,7 @@ class CtguojOperate(AojOperate):
     ## 先放这...这块待重构
     def saveContestInfo(self, cid):
         PrintUtil.info('正在获取比赛信息...')
-        resp = RequestUtil.doGet(AojApi.contestUrl())
+        resp = RequestUtil.doGet(AojApi.getUrl('contest'))
         jdata = json.loads(resp.text)
         datalist = jdata.get('list')
 
@@ -180,7 +180,7 @@ class CtguojOperate(AojOperate):
                 break
         # 判断是否需要密码
         data = {'id' : cid, 'type': ctype}
-        needPasswordTest = RequestUtil.doGet(AojApi.problemsUrl(), data)
+        needPasswordTest = RequestUtil.doGet(AojApi.getUrl('problems'), data)
 
         # Struts Problem Report页面报错编码不是utf-8
         if 'ISO-8859-1' in needPasswordTest.encoding:
@@ -192,7 +192,7 @@ class CtguojOperate(AojOperate):
             cpass = '1'
             passwd = input(termcolor.colored(u'你需要输入密码参加该比赛: ', 'green'))
             joindata = {'password' : passwd, 'id': cid}
-            passwdisRight = RequestUtil.doGet('http://192.168.9.210/acmctgu/Paper/PaperAction!checkpw.action', joindata)
+            passwdisRight = RequestUtil.doGet(AojApi.getUrl('pwdProblems'), joindata)
             if passwdisRight.text == 'no':
                 PrintUtil.error('密码错误!')
                 return
@@ -215,7 +215,7 @@ class CtguojOperate(AojOperate):
             'id': pid,
             'type': globalVar.BASE_CONF.get('contest', 'ctype')
         }
-        resp = RequestUtil.doPost(AojApi.submitCodeUrl(), subData)
+        resp = RequestUtil.doPost(AojApi.getUrl('submitCode'), subData)
         # {"id":"125","result":"Wrong Answer.","score":0,"time":"21:34:35"}
         try:
             jdata = json.loads(resp.text)
@@ -233,7 +233,7 @@ class CtguojOperate(AojOperate):
             PrintUtil.error('oops!提交出错了，请重新提交. *_*.')
 
     def getPassedList(self, cid):
-        resp = RequestUtil.doGet(AojApi.passedProblemUrl(), {'id': cid})
+        resp = RequestUtil.doGet(AojApi.getUrl('passedProblem'), {'id': cid})
         soup = BeautifulSoup(resp.text, "lxml")
         titles = soup.find_all('div', class_='nav')
         if not titles:
@@ -254,7 +254,7 @@ class CtguojOperate(AojOperate):
 
     def getPassedDetail(self, cid, pid):
 
-        resp = RequestUtil.doGet(AojApi.passedProblemUrl(), {'id': cid})
+        resp = RequestUtil.doGet(AojApi.getUrl('passedProblem'), {'id': cid})
         soup = BeautifulSoup(resp.text, "lxml")
         p = soup.find('div', class_='nav', text=re.compile(r'.*' + pid + '.*'))
 

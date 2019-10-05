@@ -17,36 +17,36 @@ class AojOperate(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def login(self, username, password, loginUrl):
+    def login(self, username, password):
         """
         登录方法
         :param username: 用户名
         :param password: 密码
-        :param loginUrl: 登录的url
         :return: true or false
         """
 
     # 获取比赛列表 isAll参数表示是否显示所有
     @abstractmethod
-    def getContestList(self,  containPassed, contestUrl):
+    def getContestList(self,  containPassed):
         """
         获取比赛列表
         :param containPassed: 是否获取所有比赛，包括已经结束的
-        :param contestUrl: 获取比赛的url
         :return: Contest model list
         """
 
     @abstractmethod
-    def getProblemList(self):
+    def getProblemList(self, cid):
         """
         获取题目列表
+        :param cid: 比赛id
         :return: problem list
         """
 
     @abstractmethod
-    def getProblemInfo(self, pid):
+    def getProblemInfo(self, cid, pid):
         """
         获取题目详细信息
+        :param cid: 比赛id
         :param pid: 题目id
         :return: Problem()
         """
@@ -86,9 +86,19 @@ class AojOperate(metaclass=ABCMeta):
         :return: Problem()
         """
 
+    # 保存比赛id信息 默认实现, 一般不需要重写
+    def saveContestInfo(self, cid):
+        PrintUtil.info('正在获取比赛信息...')
+        # 保存比赛信息
+        globalVar.BASE_CONF.set('contest', 'cid', cid)
+        with open(globalVar.BASE_PATH + 'base.conf', 'w') as fw:
+            globalVar.BASE_CONF.write(fw)
+        self.saveProblemList()
+        PrintUtil.info("设置比赛成功!\n")
+
     # 输出比赛列表的详细信息 isAll参数表示是否显示所有
-    def showContestList(self, containPassed, contestUrl):
-        contestList = self.getContestList(containPassed, contestUrl)
+    def showContestList(self, containPassed):
+        contestList = self.getContestList(containPassed)
         for c in contestList:
             if isinstance(c, Contest):
                 c.problemDetail()
@@ -96,9 +106,9 @@ class AojOperate(metaclass=ABCMeta):
                 PrintUtil.error('contest type error')
                 break
         print(''.join(' id' + '\t' + '{:35}'.format('名称') + '语言' +
-                      '\t' + '结束时间' + '\t\t' + '出题人'))
+                      '\t' + '结束时间' + '\t\t' + '描述'))
 
-    # 显示题目详细信息
+    # 显示题目列表
     def showProblemList(self):
 
         PrintUtil.info("正在加载题目列表...")
@@ -115,7 +125,7 @@ class AojOperate(metaclass=ABCMeta):
             print('')
         except:
             # 出错就从oj线上加载
-            pList = self.getProblemList()
+            pList = self.getProblemList(globalVar.BASE_CONF.get('contest', 'cid'))
             for p in pList:
                 print(p.problemSimple(), end=' ')
                 if i % 3 == 0:
@@ -136,7 +146,9 @@ class AojOperate(metaclass=ABCMeta):
     # 显示题目详细信息
     def showProblemDetail(self, pid):
         PrintUtil.info("正在加载题目...")
-        p = self.getProblemInfo(pid)
+        p = self.getProblemInfo(globalVar.BASE_CONF.get('contest', 'cid'), pid)
+        if not p:
+            return
         os.system('clear')
         print(p.problemDetail())
 
@@ -159,7 +171,9 @@ class AojOperate(metaclass=ABCMeta):
     # 缓存题目列表信息 todo 缓存题目的所有信息
     def saveProblemList(self):
         PrintUtil.info('正在缓存题目信息...')
-        pList = self.getProblemList()
+        pList = self.getProblemList(globalVar.BASE_CONF.get('contest', 'cid'))
+        if not pList:
+            PrintUtil.warn('获取题目信息失败')
         try:
             with open(globalVar.BASE_PATH + 'problemList', 'wb') as file_object:
                 pickle.dump(pList, file_object)
@@ -183,7 +197,7 @@ class AojOperate(metaclass=ABCMeta):
     # 生成代码模板
     def genCode(self, pid, codetype):
         PrintUtil.info('代码文件生成中...')
-        p = self.getProblemInfo(pid)
+        p = self.getProblemInfo(globalVar.BASE_CONF.get('contest', 'cid'), pid)
 
         title = p.title.split('(')[0].strip()
 
@@ -237,7 +251,7 @@ class AojOperate(metaclass=ABCMeta):
         # 执行
         ## 读取测试数据
         pid = fileName.split('.')[0]
-        problem = self.getProblemInfo(pid)
+        problem = self.getProblemInfo(globalVar.BASE_CONF.get('contest', 'cid'), pid)
         ex_input = problem.ex_input
         ex_output = problem.ex_output
 

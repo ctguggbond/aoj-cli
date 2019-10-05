@@ -4,6 +4,15 @@ import termcolor
 class Problem:
 
     def __init__(self):
+        self.pid = ''
+        self.title = ''
+        self.timeAndMem = ''
+        self.content = ''
+        self.descr_input = ''
+        self.descr_output = ''
+        self.ex_input = ''
+        self.ex_output = ''
+        self.code = ''
         pass
 
     def problemDetail(self):
@@ -32,9 +41,8 @@ class Problem:
         title = termcolor.colored(self.title, 'white')
         pidAndtitle = ''.join('[' + pid + ']' + '-' + title)
         formattitle = '{:<{l}}'.format(pidAndtitle, l=42 - len(pidAndtitle.encode('GBK')) + len(pidAndtitle))
-        self.score = "%02d" % self.score
-        score = termcolor.colored(str(self.score) + '分', 'yellow')
-        simpleInfo = ''.join(formattitle + score)
+        desc = termcolor.colored(str(self.desc), 'yellow')
+        simpleInfo = ''.join(formattitle + desc)
         return simpleInfo
 
     #        return '{:<{l}}'.format(simpleInfo,l= 30-len(title.encode('GBK'))+len(simpleInfo))

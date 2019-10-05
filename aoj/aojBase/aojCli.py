@@ -1,6 +1,5 @@
 from aojBase.printUtil import PrintUtil
 from aojBase import globalVar
-from aojBase.aojApi import AojApi
 from aojBase.aojRequestUtil import RequestUtil
 import sys
 import os
@@ -17,9 +16,9 @@ def list_commond(ojOperate):
         arg2 = sys.argv[2]
         if arg2 == "-c":
             if arg_len == 4 and sys.argv[3] == '-a':
-                ojOperate.showContestList(True, AojApi.contestUrl())
+                ojOperate.showContestList(True)
             else:
-                ojOperate.showContestList(False, AojApi.contestUrl())
+                ojOperate.showContestList(False)
             return
         elif arg2 == "-p":
             ojOperate.showProblemList()
@@ -31,9 +30,9 @@ def list_commond(ojOperate):
 def use_commond(ojOperate):
     if arg_len == 3:
         arg2 = sys.argv[2]
-        if re.match('^\d+$', arg2):
-            ojOperate.saveContestInfo(arg2)
-            return
+        #if re.match('^\d+$', arg2):
+        ojOperate.saveContestInfo(arg2)
+        return
     PrintUtil.error("参数错误")
     help_commond()
 
@@ -103,19 +102,19 @@ def checkout_commond():
 
 def help_commond():
     info = "\n" \
-           " aoj list -c          | 列出所有正在进行的比赛\n" \
-           " aoj use id           | 根据id选择比赛\n" \
-           " aoj list -p          | 列出当前比赛题目\n" \
-           " aoj show id          | 显示id对应题目的详细信息\n" \
-           " aoj show id -g c     | 显示题目信息并生成c语言代码文件 可选参数cpp java\n" \
-           " aoj submit filename  | 提交代码文件判题\n" \
-           " aoj show ranking     | 显示当前参加比赛对应的排名\n" \
-           " aoj list -c -a       | 列出所有进行和已结束的比赛\n" \
-           " aoj passed           | 显示所有已提交过的题目列表\n" \
-           " aoj passed id        | 显示已提交题目详细信息\n" \
-           " aoj login            | 登录\n" \
-           " aoj checkout 'ojName'| 切换oj\n" \
-           " aoj help             | 显示此帮助信息\n" \
+           " list -c          | 列出所有正在进行的比赛\n" \
+           " use id           | 根据id选择比赛\n" \
+           " list -p          | 列出当前比赛题目\n" \
+           " show id          | 显示id对应题目的详细信息\n" \
+           " show id -g c     | 显示题目信息并生成c语言代码文件 可选参数cpp java\n" \
+           " submit filename  | 提交代码文件判题\n" \
+           " show ranking     | 显示当前参加比赛对应的排名\n" \
+           " list -c -a       | 列出所有进行和已结束的比赛\n" \
+           " passed           | 显示所有已提交过的题目列表\n" \
+           " passed id        | 显示已提交题目详细信息\n" \
+           " login            | 登录\n" \
+           " checkout 'ojName'| 切换oj\n" \
+           " help             | 显示此帮助信息\n" \
            "\n" \
            "--------------------------------------------------\n"
     PrintUtil.info(info)
@@ -140,6 +139,7 @@ def check_login(ojOperate):
         PrintUtil.info("使用\'aoj help\' 查看帮助信息")
         sys.exit(0)
     elif not ojOperate.isLogin():
+        PrintUtil.info('登录失效')
         # 验证用户是否已经保存密码
         try:
             username = globalVar.BASE_CONF.get('user', 'username')
@@ -150,8 +150,8 @@ def check_login(ojOperate):
                 input_name_pass_login(ojOperate)
             else:
                 # 账号密码不为空， 尝试自动登录
-                PrintUtil.info('登录失效，正在尝试重新登录...')
-                isSuccess = ojOperate.login(username, password, AojApi.loginUrl())
+                PrintUtil.info('正在尝试重新登录...')
+                isSuccess = ojOperate.login(username, password)
                 if isSuccess:
                     # 保存cookie
                     RequestUtil.session.cookies.save(ignore_discard=True, ignore_expires=True)
@@ -173,7 +173,7 @@ def check_login(ojOperate):
 def input_name_pass_login(ojOperate):
     username = input(termcolor.colored('请输入用户名: ', 'cyan'))
     password = getpass.getpass(termcolor.colored('请输入密码： ', 'cyan'))
-    loginSuccess = ojOperate.login(username, password, AojApi.loginUrl())
+    loginSuccess = ojOperate.login(username, password)
 
     if loginSuccess:
         # 保存cookie
